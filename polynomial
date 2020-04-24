@@ -1,0 +1,320 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+template <typename T>
+void delete_from_end(std::vector<T>& p) {
+    int i = static_cast<int>(p.size()) - 1;
+    while (i > 0 && p[i] == T(0)) {
+        i -= 1;
+    }
+    if (i == 0 && p[i] == T(0))
+        p.resize(0);
+    else
+        p.resize(i + 1);
+}
+
+template <typename T>
+class Polynomial {
+public:
+    std::vector<T> coeff{};
+    Polynomial<T>(const std::vector<T>& data): coeff() {
+        for (size_t i = 0; i < data.size(); i++) {
+            coeff.push_back(data[i]);
+        }
+        delete_from_end(coeff);
+    }
+    Polynomial<T>(const T& coef): coeff() {
+        coeff.push_back(coef);
+        delete_from_end(coeff);
+    }
+    Polynomial<T>() {
+    }
+    template <typename Iter>
+    Polynomial(Iter it_begin, Iter it_end) {
+        for (; it_begin != it_end; it_begin++) {
+            coeff.push_back(*it_begin);
+        }
+        delete_from_end(coeff);
+    }
+    int Degree() const {
+        return static_cast<int>(coeff.size()) - 1;
+    }
+    typename
+        std::vector<T>::const_iterator begin() const {
+        return coeff.begin();
+    }
+    typename
+        std::vector<T>::const_iterator end() const {
+        return coeff.end();
+    }
+    bool operator == (const Polynomial& other) const {
+        for (int i = 0; i <= Degree(); ++i) {
+            if (coeff[i] != other.coeff[i])
+                 return false;
+        }
+        return true;
+    }
+    bool operator!= (const Polynomial& other) const {
+        return !(*this == other);
+    }
+    Polynomial operator+ (const Polynomial& other) const {
+        std::vector<T> result;
+        size_t it_ = 0;
+        size_t it_other = 0;
+        while (it_ != coeff.size() || it_other != other.coeff.size()) {
+            if ((it_ < coeff.size()) && (it_other < other.coeff.size())) {
+                result.push_back(coeff[it_] + other.coeff[it_other]);
+                it_++;
+                it_other++;
+            } else if (it_ < coeff.size()) {
+                result.push_back(coeff[it_]);
+                it_++;
+            } else if (it_other < other.coeff.size()) {
+                result.push_back(other.coeff[it_other]);
+                it_other++;
+            }
+        }
+        delete_from_end(result);
+        return Polynomial(result);
+    }
+    Polynomial<T> operator+ (const T& scalar) const {
+        Polynomial temp(coeff);
+        if (coeff.empty()) {
+            temp.coeff.push_back(scalar);
+            delete_from_end(temp.coeff);
+        } else {
+            temp.coeff[0] += scalar;
+            delete_from_end(temp.coeff);
+        }
+        return temp;
+    }
+    Polynomial operator- (const Polynomial& other) const {
+        std::vector<T> result;
+        size_t it_ = 0;
+        size_t it_other = 0;
+        if (coeff.size() >= other.coeff.size()) {
+            while (it_ != coeff.size() || it_other != other.coeff.size()) {
+                if ((it_ < coeff.size()) && (it_other < other.coeff.size())) {
+                    result.push_back(coeff[it_] - other.coeff[it_other]);
+                    it_++;
+                    it_other++;
+                } else if (it_ < coeff.size()) {
+                    result.push_back(coeff[it_]);
+                    it_++;
+                }
+            }
+        } else {
+            while (it_ != coeff.size() || it_other != other.coeff.size()) {
+                if ((it_ < coeff.size()) && (it_other < other.coeff.size())) {
+                    result.push_back(coeff[it_] - other.coeff[it_other]);
+                    it_++;
+                    it_other++;
+                } else if (it_other < other.coeff.size()) {
+                    result.push_back(-other.coeff[it_other]);
+                    it_other++;
+                }
+            }
+        }
+        delete_from_end(result);
+        return Polynomial(result);
+    }
+    Polynomial<T> operator- (const T& scalar) const {
+        Polynomial temp(coeff);
+        if (coeff.empty()) {
+            temp.coeff.push_back(-scalar);
+            delete_from_end(temp.coeff);
+        } else {
+            temp.coeff[0] -= scalar;
+            delete_from_end(temp.coeff);
+        }
+        return temp;
+    }
+    Polynomial<T>& operator+= (const Polynomial& other) {
+        *this = *this + other;
+        delete_from_end(coeff);
+        return *this;
+    }
+    Polynomial<T>& operator+= (const T& scalar) {
+        Polynomial temp(coeff);
+        if (coeff.empty()) {
+            coeff.push_back(scalar);
+            delete_from_end(temp.coeff);
+        } else {
+            coeff[0] += scalar;
+            delete_from_end(temp.coeff);
+        }
+        return *this;
+    }
+    Polynomial<T>& operator-= (const Polynomial<T>& other) {
+        *this = *this - other;
+        delete_from_end(coeff);
+        return *this;
+    }
+    Polynomial<T>& operator-= (const T& scalar) {
+        if (coeff.empty()) {
+            coeff.push_back(-scalar);
+            delete_from_end(coeff);
+        } else {
+            coeff[0] -= scalar;
+            delete_from_end(coeff);
+        }
+        return *this;
+    }
+    T operator[] (const int& it) const {
+        if (it >= static_cast<int>(coeff.size()) || coeff.empty()) {
+            return T(0);
+        } else {
+            return coeff[it];
+        }
+    }
+    Polynomial<T> operator* (const Polynomial<T>& other) const {
+        std::vector<T> result;
+        int n = std::max(static_cast<int>(Degree()), static_cast<int>(other.Degree())) + 1;
+        result.resize(2 * n);
+        for (int i = 0; i < Degree() + 1; i++) {
+            for (int j = 0; j <  other.Degree() + 1; j++) {
+                result[i + j] += coeff[i] * other.coeff[j];
+            }
+        }
+        delete_from_end(result);
+        return Polynomial(result);
+    }
+    Polynomial<T> operator* (const T& scalar) const {
+        std::vector<T> result;
+        for (size_t i = 0; i < coeff.size(); i++) {
+            result.push_back(scalar * coeff[i]);
+        }
+        delete_from_end(result);
+        return Polynomial(result);
+    }
+    Polynomial<T>& operator*= (const Polynomial<T>& other) {
+        Polynomial temp(*this * other);
+        coeff = std::move(temp.coeff);
+        delete_from_end(coeff);
+        return *this;
+    }
+    Polynomial<T>& operator*= (const T& scalar) {
+        for (size_t i = 0; i < coeff.size(); i++) {
+            coeff[i] = scalar * coeff[i];
+        }
+        delete_from_end(coeff);
+        return *this;
+    }
+    T operator() (const T& it) const {
+        if (coeff.size() > 1) {
+            auto iter = coeff.end();
+            iter--;
+            T sum = *(iter) * it;
+            iter--;
+            while (iter != coeff.begin()) {
+                sum += *iter;
+                sum = sum * it;
+                iter--;
+            }
+            sum += *coeff.begin();
+            return sum;
+        } else if (coeff.empty()) {
+            return T(0);
+        } else {
+            return coeff[0];
+        }
+    }
+    Polynomial<T> operator& (const Polynomial<T>& other) const {
+        Polynomial<T> result;
+        if (coeff.size() > 1) {
+            auto iter = coeff.end();
+            iter--;
+            result = other * *iter;
+            iter--;
+            while (iter != coeff.begin()) {
+                result += *iter;
+                result = result * other;
+                iter--;
+            }
+            result += *coeff.begin();
+            return result;
+        } else if (coeff.empty()) {
+            return T(0);
+        } else {
+            return coeff[0];
+        }
+    }
+};
+
+
+template <typename T>
+std::string sgn(const T& it) {
+    if (it > T(0)) {
+        return "+";
+    } else {
+        return "-";
+    }
+}
+
+template <typename T>
+T abs_(const T& it) {
+    if (it < T(0)) {
+        return it * (-T(1));
+    } else {
+        return it;
+    }
+}
+
+template <typename T>
+std::ostream& operator << (std::ostream& out, const Polynomial<T>& other) {
+    if (other.coeff.empty()) {
+        out << T(0);
+    } else if (other.coeff.size() == 1) {
+        out << other.coeff[0];
+    } else if (other.coeff.size() == 2) {
+        if (other.coeff[other.coeff.size()-1] == T(1)) {
+            out << "x";
+        } else if (other.coeff[other.coeff.size()-1] == -T(1)) {
+            out << "-x";
+        } else {
+            out << other.coeff[other.coeff.size()-1] << "*x";
+        }
+        if (other.coeff[0] != T(0)) {
+            out << sgn(other.coeff[0]) << abs_(other.coeff[0]);
+        }
+    } else {
+        if (other.coeff[other.coeff.size()-1] == T(1)) {
+            out << "x" << "^" << other.Degree();
+        } else if (other.coeff[other.coeff.size()-1] == -T(1)) {
+            out << sgn(other.coeff[other.coeff.size()-1]) << "x" << "^" << other.Degree();
+        } else {
+            if (other.coeff[other.coeff.size()-1] < T(0)) {
+                out << "-" << abs_(other.coeff[other.coeff.size()-1])
+                << "*x" << "^" << other.Degree();
+            } else {
+                out << other.coeff[other.coeff.size()-1] << "*x" << "^" << other.Degree();
+            }
+        }
+        for (size_t i = other.Degree() - 1; i >= 2; i--) {
+            if (other.coeff[i] != T(0)) {
+                if (other.coeff[i] == T(1)) {
+                    out << "+x^" << i;
+                } else if (other.coeff[i] == -T(1)) {
+                    out << "-x^" << i;
+                } else {
+                    out << sgn(other.coeff[i]) << abs_(other.coeff[i]) << "*x^" << i;
+                }
+            }
+        }
+        if (other.coeff[1] != T(0)) {
+            if (other.coeff[1] == T(1)) {
+                out << "+x";
+            } else if (other.coeff[1] == -T(1)) {
+                out << "-x";
+            } else {
+                out << sgn(other.coeff[1]) << abs_(other.coeff[1]) << "*x";
+            }
+        }
+        if (other.coeff[0] != T(0)) {
+            out << sgn(other.coeff[0]) << abs_(other.coeff[0]);
+        }
+    }
+    return out;
+}
