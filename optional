@@ -1,6 +1,6 @@
 /*
 
-My realization of https://en.cppreference.com/w/cpp/utility/optional
+My implementation of optional (en.cppreference.com/w/cpp/utility/optional).
 
 */
 
