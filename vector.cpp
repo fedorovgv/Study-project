@@ -1,8 +1,4 @@
-/* 
-
-My implementation of std::vector<T>
-
-*/
+/* implementation of std::vector<T> */
 
 #include <algorithm>
 #include <memory>
