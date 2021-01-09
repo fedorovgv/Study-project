@@ -1,8 +1,4 @@
-/*
-
-My implementation of optional (en.cppreference.com/w/cpp/utility/optional).
-
-*/
+/* implementation of optional (en.cppreference.com/w/cpp/utility/optional) */
 
 #include <iostream>
 
