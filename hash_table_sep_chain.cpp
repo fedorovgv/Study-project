@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <utility>
 
-
 template<class KeyType, class ValueType, class Hash = std::hash<KeyType>>
 class HashMap {
 private:
