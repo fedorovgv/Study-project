@@ -1,9 +1,4 @@
-/* 
-
-My implementation of shared_ptr
-
-*/
-
+/* implementation of shared_ptr */
 
 #include <algorithm>
 #include <memory>
